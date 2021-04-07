@@ -1,5 +1,6 @@
 package com.example.observableswithkotlindelegates
 
+import java.lang.IndexOutOfBoundsException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -30,14 +31,14 @@ interface ObservableList<T> : MutableList<T>, Movable<T> {
     fun clearMoveListeners()
 }
 
-private class ObservableArrayList<T> : ArrayList<T>, ObservableList<T> {
+internal class ObservableArrayList<T> : ArrayList<T>, ObservableList<T> {
 
     constructor() : super()
     constructor(collection: Collection<T>) : super(collection)
 
-    val insertListeners = mutableListOf<ItemListener<T>>()
-    val removeListeners = mutableListOf<ItemListener<T>>()
-    val moveListeners = mutableListOf<(Int, Int) -> Unit>()
+    private val insertListeners = mutableListOf<ItemListener<T>>()
+    private val removeListeners = mutableListOf<ItemListener<T>>()
+    private val moveListeners = mutableListOf<(Int, Int) -> Unit>()
 
     override fun add(element: T): Boolean {
         val isAdded = super.add(element)
@@ -72,7 +73,7 @@ private class ObservableArrayList<T> : ArrayList<T>, ObservableList<T> {
     override fun move(element: T, destIndex: Int) {
         val currentIndex = indexOf(element)
         if (currentIndex == -1) throw IllegalAccessException("No such element in list")
-        if (destIndex > lastIndex || destIndex < 0) return
+        if (destIndex > lastIndex || destIndex < 0) throw IndexOutOfBoundsException()
         Collections.swap(this, currentIndex, destIndex)
         moveListeners.forEach { it(currentIndex, destIndex) }
     }
